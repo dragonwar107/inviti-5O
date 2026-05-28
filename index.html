@@ -123,7 +123,6 @@
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        /* Ottimizzazioni per schermi piccolissimi (smartphone datati o mini) */
         @media (max-width: 360px) {
             h1 { font-size: 1.4rem; }
             button, input[type="text"] { padding: 12px; font-size: 0.95rem; }
@@ -136,24 +135,23 @@
     <h1>Cerca il tuo Invito Speciale</h1>
     <p>Inserisci il tuo nome e cognome per visualizzare la sorpresa!</p>
     
-    <div class="input-group">
-        <input type="text" id="guestName" placeholder="Es: Mariateresa Turtoro">
+    <form class="input-group" onsubmit="event.preventDefault(); checkInvitation();">
+        <input type="text" id="guestName" placeholder="Es: Mariateresa Turtoro" autocomplete="off">
         <br>
-        <button onclick="checkInvitation()">Scopri l'invito</button>
-    </div>
+        <button type="submit">Scopri l'invito</button>
+    </form>
 
     <div id="errorMessage" class="error-message">Errore, puoi inserire solo il nome e il cognome dei prof della 5°O</div>
 
     <div id="invitationContainer" class="invitation-container">
         <h3>Ecco il tuo invito personalizzato! ✨</h3>
         <div class="image-wrapper">
-            <img id="invitationImage" src="" alt="Invito Speciale" onerror="tryAlternativeExtension(this)">
+            <img id="invitationImage" src="" alt="Invito Speciale" data-tried-alt="false">
         </div>
     </div>
 </div>
 
 <script>
-    // LISTA COMPLETA DEI 16 PROFESSORI
     const guests = {
         "mariateresa turtoro": "mariateresa_turtoro.jpg",
         "gabriella campanile": "gabriella_campanile.jpg",
@@ -173,20 +171,18 @@
         "salvatore giordano": "salvatore_giordano.jpg"
     };
 
-    // Funzione per generare un suono magico/scintillante sintetizzato al volo
     function playMagicSound() {
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;
             const ctx = new AudioContext();
             
-            // Nota 1 (Arpeggio rapido)
-            setTimeout(() => playTone(ctx, 523.25, 0.15), 0);   // Do5
-            setTimeout(() => playTone(ctx, 659.25, 0.15), 100); // Mi5
-            setTimeout(() => playTone(ctx, 783.99, 0.15), 200); // Sol5
-            setTimeout(() => playTone(ctx, 1046.50, 0.4), 300); // Do6
+            setTimeout(() => playTone(ctx, 523.25, 0.15), 0);   
+            setTimeout(() => playTone(ctx, 659.25, 0.15), 100); 
+            setTimeout(() => playTone(ctx, 783.99, 0.15), 200); 
+            setTimeout(() => playTone(ctx, 1046.50, 0.4), 300); 
         } catch (e) {
-            console.log("Audio non supportato o bloccato dalle policy del browser.");
+            console.log("Audio bloccato dalle policy del browser.");
         }
     }
 
@@ -204,7 +200,9 @@
     }
 
     function checkInvitation() {
-        const inputRaw = document.getElementById('guestName').value.trim().toLowerCase();
+        const inputField = document.getElementById('guestName');
+        // Pulisce gli spazi doppi o laterali
+        const inputRaw = inputField.value.trim().replace(/\s+/g, ' ').toLowerCase();
         const errorDiv = document.getElementById('errorMessage');
         const inviteContainer = document.getElementById('invitationContainer');
         const inviteImg = document.getElementById('invitationImage');
@@ -212,10 +210,10 @@
         if (!inputRaw) return;
 
         let foundImage = null;
+        const inputTokens = inputRaw.split(" ");
 
         for (const officialName in guests) {
             const officialTokens = officialName.split(" ");
-            const inputTokens = inputRaw.split(/\s+/);
             
             if (officialTokens.length === inputTokens.length) {
                 const match = officialTokens.every(token => inputTokens.includes(token));
@@ -227,30 +225,34 @@
         }
 
         if (foundImage) {
-            inviteImg.setAttribute('data-tried-jpeg', 'false');
+            // Chiude la tastiera virtuale sui telefoni dopo aver premuto
+            inputField.blur(); 
+            
+            inviteImg.setAttribute('data-tried-alt', 'false');
+            
+            // Gestione sicura dell'estensione alternativa se l'immagine fallisce
+            inviteImg.onerror = function() {
+                if (this.getAttribute('data-tried-alt') !== 'true') {
+                    this.setAttribute('data-tried-alt', 'true');
+                    if (this.src.endsWith('.jpg')) {
+                        this.src = this.src.replace('.jpg', '.jpeg');
+                    } else if (this.src.endsWith('.jpeg')) {
+                        this.src = this.src.replace('.jpeg', '.jpg');
+                    }
+                } else {
+                    this.onerror = null; // Evita loop infiniti se la foto manca del tutto
+                }
+            };
+
             inviteImg.src = foundImage;
             inviteContainer.style.display = 'block';
             errorDiv.style.display = 'none';
             
-            // 🎶 Avvia il suono magico
             playMagicSound();
-
-            // 🎉 Avvia i coriandoli (Esplosione a sinistra e a destra)
             confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         } else {
             inviteContainer.style.display = 'none';
             errorDiv.style.display = 'block';
-        }
-    }
-
-    function tryAlternativeExtension(img) {
-        if (img.getAttribute('data-tried-jpeg') !== 'true') {
-            img.setAttribute('data-tried-jpeg', 'true');
-            if (img.src.endsWith('.jpg')) {
-                img.src = img.src.replace('.jpg', '.jpeg');
-            } else if (img.src.endsWith('.jpeg')) {
-                img.src = img.src.replace('.jpeg', '.jpg');
-            }
         }
     }
 </script>
