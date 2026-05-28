@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invito Speciale - Cena di Fine Anno</title>
+    <!-- Libreria per l'effetto Coriandoli 🎉 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * {
@@ -96,6 +97,56 @@
             border-radius: 8px;
             border: 1px solid rgba(255, 107, 107, 0.2);
         }
+        
+        /* Sezione Lista Nomi a comparsa 📜 */
+        .names-help-container {
+            margin-top: 20px;
+            border-top: 1px dashed #233554;
+            padding-top: 15px;
+        }
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: #8892b0;
+            font-size: 0.85rem;
+            cursor: pointer;
+            box-shadow: none;
+            padding: 5px;
+            width: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: underline;
+        }
+        .toggle-btn:hover {
+            background: none;
+            color: #64ffda;
+        }
+        .names-list {
+            display: none;
+            margin-top: 10px;
+            background: #0a192f;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #233554;
+            text-align: left;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .names-list ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        @media (max-width: 400px) {
+            .names-list ul { grid-template-columns: 1fr; }
+        }
+        .names-list li {
+            font-size: 0.85rem;
+            color: #a8b2d1;
+        }
+
         .invitation-container {
             margin-top: 25px;
             display: none;
@@ -143,6 +194,31 @@
 
     <div id="errorMessage" class="error-message">Errore, puoi inserire solo il nome e il cognome dei prof della 5°O</div>
 
+    <!-- Lista dei nomi a comparsa per sicurezza ed evitare errori -->
+    <div class="names-help-container">
+        <button type="button" class="toggle-btn" onclick="toggleNamesList()">🔍 Non trovi il tuo nome? Clicca qui per verificare l'elenco</button>
+        <div id="namesList" class="names-list">
+            <ul>
+                <li>• Mariateresa Turtoro</li>
+                <li>• Gabriella Campanile</li>
+                <li>• Chiara Maffia</li>
+                <li>• Clemente Improta</li>
+                <li>• Annamaria Di Marino</li>
+                <li>• Ornella Spagnuolo</li>
+                <li>• Anna Guerriero Napolano</li>
+                <li>• Carmen Poziello</li>
+                <li>• Assunta Bocchetti</li>
+                <li>• Claudia Caracciolo</li>
+                <li>• Flora Del Prete</li>
+                <li>• Paolo Pirozzi</li>
+                <li>• Massimiliano Marchese</li>
+                <li>• Claudio Ancelotti</li>
+                <li>• Giovanni Russo</li>
+                <li>• Salvatore Giordano</li>
+            </ul>
+        </div>
+    </div>
+
     <div id="invitationContainer" class="invitation-container">
         <h3>Ecco il tuo invito personalizzato! ✨</h3>
         <div class="image-wrapper">
@@ -170,6 +246,16 @@
         "giovanni russo": "giovanni_russo.jpg",
         "salvatore giordano": "salvatore_giordano.jpg"
     };
+
+    // Funzione per mostrare/nascondere la lista dei nomi
+    function toggleNamesList() {
+        const list = document.getElementById('namesList');
+        if (list.style.display === 'block') {
+            list.style.display = 'none';
+        } else {
+            list.style.display = 'block';
+        }
+    }
 
     function playMagicSound() {
         try {
@@ -201,7 +287,6 @@
 
     function checkInvitation() {
         const inputField = document.getElementById('guestName');
-        // Pulisce gli spazi doppi o laterali
         const inputRaw = inputField.value.trim().replace(/\s+/g, ' ').toLowerCase();
         const errorDiv = document.getElementById('errorMessage');
         const inviteContainer = document.getElementById('invitationContainer');
@@ -225,12 +310,13 @@
         }
 
         if (foundImage) {
-            // Chiude la tastiera virtuale sui telefoni dopo aver premuto
             inputField.blur(); 
+            
+            // Chiude la lista dei nomi se era aperta per fare spazio alla foto
+            document.getElementById('namesList').style.display = 'none';
             
             inviteImg.setAttribute('data-tried-alt', 'false');
             
-            // Gestione sicura dell'estensione alternativa se l'immagine fallisce
             inviteImg.onerror = function() {
                 if (this.getAttribute('data-tried-alt') !== 'true') {
                     this.setAttribute('data-tried-alt', 'true');
@@ -240,7 +326,7 @@
                         this.src = this.src.replace('.jpeg', '.jpg');
                     }
                 } else {
-                    this.onerror = null; // Evita loop infiniti se la foto manca del tutto
+                    this.onerror = null; 
                 }
             };
 
