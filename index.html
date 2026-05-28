@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invito Speciale - Cena di Fine Anno</title>
-    <!-- Libreria per l'effetto Coriandoli 🎉 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * {
@@ -157,17 +156,25 @@
             margin-bottom: 15px;
             font-size: 1.1rem;
         }
+        
+        /* Ottimizzazione fondamentale per evitare foto sgranate 🎯 */
         .image-wrapper {
             width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
             border-radius: 12px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.7);
             border: 1px solid rgba(100, 255, 218, 0.2);
+            background-color: #0a192f;
         }
         .invitation-container img {
-            width: 100%;
+            max-width: 100%; /* Impedisce all'immagine di uscire dallo schermo */
             height: auto;
             display: block;
+            image-rendering: -webkit-optimize-contrast; /* Ottimizza la nitidezza nei browser moderni */
+            image-rendering: crisp-edges;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.92) translateY(15px); }
@@ -194,7 +201,6 @@
 
     <div id="errorMessage" class="error-message">Errore, puoi inserire solo il nome e il cognome dei prof della 5°O</div>
 
-    <!-- Lista dei nomi a comparsa per sicurezza ed evitare errori -->
     <div class="names-help-container">
         <button type="button" class="toggle-btn" onclick="toggleNamesList()">🔍 Non trovi il tuo nome? Clicca qui per verificare l'elenco</button>
         <div id="namesList" class="names-list">
@@ -247,7 +253,6 @@
         "salvatore giordano": "salvatore_giordano.jpg"
     };
 
-    // Funzione per mostrare/nascondere la lista dei nomi
     function toggleNamesList() {
         const list = document.getElementById('namesList');
         if (list.style.display === 'block') {
@@ -311,10 +316,7 @@
 
         if (foundImage) {
             inputField.blur(); 
-            
-            // Chiude la lista dei nomi se era aperta per fare spazio alla foto
             document.getElementById('namesList').style.display = 'none';
-            
             inviteImg.setAttribute('data-tried-alt', 'false');
             
             inviteImg.onerror = function() {
